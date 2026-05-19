@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MailHub — Label Énergie</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f7f8fc; --white:#fff; --border:#e8eaf2; --border2:#d8dce8;
+  --accent:#2563eb; --al:#eff4ff; --am:#dbeafe;
+  --green:#059669; --gl:#ecfdf5; --gm:#d1fae5;
+  --orange:#d97706; --ol:#fffbeb; --om:#fde68a;
+  --red:#dc2626; --rl:#fef2f2; --rm:#fecaca;
+  --purple:#7c3aed; --pl:#f5f3ff; --pm:#ede9fe;
+  --cyan:#0891b2; --cl:#ecfeff;
+  --text:#0f172a; --text2:#475569; --text3:#94a3b8;
+  --sh-sm:0 1px 3px rgba(15,23,42,.06); --sh:0 4px 16px rgba(15,23,42,.08); --sh-lg:0 12px 40px rgba(15,23,42,.12);
+  --r:12px; --rs:8px; --rl2:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;}
+.app{display:flex;height:100vh;}
+
+/* SIDEBAR */
+.sidebar{width:64px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:0;flex-shrink:0;transition:width .3s cubic-bezier(.4,0,.2,1);overflow:hidden;z-index:20;box-shadow:var(--sh-sm);}
+.sidebar.exp{width:224px;}
+.sb-logo{width:100%;padding:16px 0 14px;display:flex;align-items:center;justify-content:center;gap:9px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-logo-icon{width:32px;height:32px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;box-shadow:0 2px 8px rgba(37,99,235,.35);}
+.sb-logo-text{font-family:'Playfair Display',serif;font-size:17px;font-weight:600;white-space:nowrap;display:none;}
+.sidebar.exp .sb-logo-text{display:block;}
+.sb-nav{flex:1;width:100%;padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+.sb-bottom{width:100%;padding:10px 8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:2px;}
+.nav-item{width:48px;height:42px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all .18s;color:var(--text2);font-size:16px;flex-shrink:0;}
+.sidebar.exp .nav-item{width:100%;justify-content:flex-start;padding:0 12px;gap:10px;}
+.nav-item:hover{background:var(--bg);}
+.nav-item.active{background:var(--al);color:var(--accent);}
+.nav-item.active .nav-label{color:var(--accent);font-weight:700;}
+.nav-label{font-size:12.5px;font-weight:500;white-space:nowrap;display:none;}
+.sidebar.exp .nav-label{display:block;}
+.nav-badge{position:absolute;top:6px;right:6px;background:var(--red);color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;}
+.sidebar.exp .nav-badge{right:10px;}
+.nav-sep{height:1px;background:var(--border);margin:4px 8px;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.topbar{height:56px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;}
+.topbar-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;}
+.topbar-chips{display:flex;gap:8px;margin-left:auto;align-items:center;}
+.chip{display:flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:4px 11px;font-size:11.5px;font-weight:500;color:var(--text2);}
+.chip-dot{width:6px;height:6px;border-radius:50%;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}.pulse{animation:pulse 2s infinite;}
+
+/* BUTTONS */
+.btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--rs);font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;border:none;transition:all .18s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3);}
+.btn-primary:hover{background:#1d4ed8;transform:translateY(-1px);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-ghost{background:var(--white);color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text);}
+.btn-success{background:var(--green);color:#fff;}
+.btn-success:hover{background:#047857;transform:translateY(-1px);}
+.btn-purple{background:var(--purple);color:#fff;}
+.btn-purple:hover{background:#6d28d9;transform:translateY(-1px);}
+.btn-purple:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+.content{flex:1;display:flex;overflow:hidden;}
+
+/* MAIL PANEL */
+.mail-panel{width:340px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+.panel-top{padding:13px 16px 11px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:9px;}
+.filter-scroll{display:flex;gap:5px;flex-wrap:wrap;}
+.fchip{padding:3px 9px;border-radius:100px;font-size:10.5px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .15s;user-select:none;}
+.fchip-all{color:var(--text2);border-color:var(--border2);background:var(--bg);}
+.fchip-all.on{color:var(--accent);border-color:var(--accent);background:var(--al);}
+.fchip-consent{color:var(--green);border-color:var(--gm);background:var(--gl);}
+.fchip-consent.on{border-color:var(--green);box-shadow:0 0 0 2px rgba(5,150,105,.12);}
+.fchip-mandat{color:var(--purple);border-color:var(--pm);background:var(--pl);}
+.fchip-mandat.on{border-color:var(--purple);box-shadow:0 0 0 2px rgba(124,58,237,.12);}
+.fchip-surplace{color:var(--orange);border-color:var(--om);background:var(--ol);}
+.fchip-surplace.on{border-color:var(--orange);box-shadow:0 0 0 2px rgba(217,119,6,.12);}
+.fchip-urgent{color:var(--red);border-color:var(--rm);background:var(--rl);}
+.fchip-urgent.on{border-color:var(--red);box-shadow:0 0 0 2px rgba(220,38,38,.12);}
+.fchip-autre{color:var(--cyan);border-color:#a5f3fc;background:var(--cl);}
+.fchip-autre.on{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(8,145,178,.12);}
+.search-wrap{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rs);padding:7px 12px;transition:border-color .15s;}
+.search-wrap:focus-within{border-color:var(--accent);background:var(--white);}
+.search-wrap input{background:none;border:none;outline:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;color:var(--text);flex:1;}
+.search-wrap input::placeholder{color:var(--text3);}
+.mail-list{flex:1;overflow-y:auto;}
+.mail-list::-webkit-scrollbar{width:3px;}
+.mail-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.mail-item{padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;animation:fadeSlide .2s ease;border-left:3px solid transparent;position:relative;}
+.mail-item:hover{background:var(--bg);}
+.mail-item.sel{background:var(--al);border-left-color:var(--accent);}
+.mail-item.unread .mi-sender{font-weight:700;color:var(--text);}
+.mi-row{display:flex;align-items:center;gap:9px;margin-bottom:4px;}
+.mi-avatar{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.mi-sender{font-size:12.5px;font-weight:500;flex:1;color:var(--text2);}
+.mi-time{font-size:10.5px;color:var(--text3);}
+.mi-subject{font-size:12px;color:var(--text);font-weight:500;margin-bottom:3px;padding-left:39px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mi-preview{font-size:11px;color:var(--text3);padding-left:39px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mi-tags{display:flex;gap:4px;padding-left:39px;margin-top:6px;flex-wrap:wrap;}
+.unread-dot{position:absolute;top:50%;right:14px;transform:translateY(-50%);width:7px;height:7px;border-radius:50%;background:var(--accent);}
+.tag{padding:2px 7px;border-radius:100px;font-size:9.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;}
+.t-consent{background:var(--gl);color:var(--green);border:1px solid var(--gm);}
+.t-mandat{background:var(--pl);color:var(--purple);border:1px solid var(--pm);}
+.t-surplace{background:var(--ol);color:var(--orange);border:1px solid var(--om);}
+.t-urgent{background:var(--rl);color:var(--red);border:1px solid var(--rm);}
+.t-autre{background:var(--cl);color:var(--cyan);border:1px solid #a5f3fc;}
+.t-anah{background:var(--al);color:var(--accent);border:1px solid var(--am);}
+.t-ai{background:var(--pl);color:var(--purple);border:1px solid var(--pm);display:inline-flex;align-items:center;gap:3px;}
+
+/* MAIL DETAIL */
+.mail-detail{flex:1;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;color:var(--text3);}
+.empty-icon-wrap{width:72px;height:72px;background:var(--white);border:1.5px solid var(--border);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:var(--sh-sm);}
+.empty-label{font-size:13px;font-weight:500;color:var(--text3);}
+.detail-header{background:var(--white);border-bottom:1px solid var(--border);padding:18px 22px;}
+.d-subject{font-family:'Playfair Display',serif;font-size:20px;font-weight:500;color:var(--text);line-height:1.35;margin-bottom:12px;}
+.d-meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.d-meta-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);}
+.d-meta-item strong{color:var(--text);font-weight:600;}
+.d-actions{margin-left:auto;display:flex;gap:7px;}
+.d-tags{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap;}
+.ai-card{margin:16px 20px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--rl2);overflow:hidden;box-shadow:var(--sh-sm);}
+.ai-card-header{padding:11px 16px;background:linear-gradient(135deg,#f0f7ff,#f8f0ff);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.ai-badge{background:var(--accent);color:#fff;border-radius:6px;padding:2px 7px;font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;}
+.ai-mode{font-size:11px;color:var(--text3);font-weight:500;}
+.ai-card-body{padding:14px 16px;}
+.ai-summary-text{font-size:13px;color:var(--text2);line-height:1.6;}
+.ai-cat-pill{display:inline-flex;align-items:center;gap:6px;border-radius:100px;padding:5px 12px;font-size:11px;font-weight:700;margin-top:10px;letter-spacing:.2px;}
+.ai-key-points{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.ai-kp{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:5px 10px;font-size:11.5px;color:var(--text2);}
+.d-body{flex:1;padding:18px 22px;overflow-y:auto;font-size:13.5px;line-height:1.75;color:var(--text2);white-space:pre-wrap;}
+.d-body::-webkit-scrollbar{width:3px;}
+.d-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.reply-panel{background:var(--white);border-top:1px solid var(--border);padding:14px 20px;}
+.reply-top{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.reply-lbl{font-size:10.5px;font-weight:700;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;}
+.reply-ai-badge{background:var(--al);color:var(--accent);border:1px solid var(--am);border-radius:100px;padding:2px 8px;font-size:9.5px;font-weight:700;}
+.reply-ta{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);padding:11px 14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;line-height:1.65;color:var(--text);resize:none;outline:none;min-height:80px;transition:border-color .15s;}
+.reply-ta:focus{border-color:var(--accent);background:var(--white);}
+.reply-footer{display:flex;justify-content:space-between;align-items:center;margin-top:9px;}
+.reply-hint{font-size:11px;color:var(--text3);}
+
+/* ACCOUNTS VIEW */
+.accounts-view{flex:1;padding:24px;overflow-y:auto;background:var(--bg);}
+.acc-item{display:flex;align-items:center;gap:13px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:13px 16px;margin-bottom:8px;position:relative;overflow:hidden;box-shadow:var(--sh-sm);transition:box-shadow .15s;}
+.acc-item:hover{box-shadow:var(--sh);}
+.acc-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--green);border-radius:4px 0 0 4px;}
+.acc-info{flex:1;}
+.acc-email{font-size:13px;font-weight:600;color:var(--text);}
+.acc-status{font-size:11px;color:var(--text3);margin-top:2px;}
+.acc-count{background:var(--al);color:var(--accent);border-radius:100px;padding:3px 10px;font-size:11.5px;font-weight:700;border:1px solid var(--am);}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(6px);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.vis{opacity:1;pointer-events:all;}
+.modal{background:var(--white);border:1px solid var(--border);border-radius:20px;width:500px;max-width:95vw;padding:28px;box-shadow:var(--sh-lg);transform:translateY(16px) scale(.98);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.modal-overlay.vis .modal{transform:translateY(0) scale(1);}
+.modal-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--text2);margin-bottom:22px;}
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px;}
+.form-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rs);padding:9px 13px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;transition:border-color .15s;}
+.form-input:focus{border-color:var(--accent);background:var(--white);}
+select.form-input{cursor:pointer;}
+.form-row{display:flex;gap:10px;}
+.form-row .form-group{flex:1;}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);}
+.alert{border-radius:10px;padding:11px 14px;margin-top:10px;font-size:13px;line-height:1.55;display:flex;gap:9px;align-items:flex-start;}
+.alert-w{background:var(--ol);border:1px solid var(--om);color:#92400e;}
+.alert-e{background:var(--rl);border:1px solid var(--rm);color:#991b1b;}
+.alert-s{background:var(--gl);border:1px solid var(--gm);color:#065f46;}
+
+/* NOTIF */
+.notif{position:fixed;top:18px;right:18px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px;z-index:200;box-shadow:var(--sh-lg);transform:translateX(120%);transition:transform .35s cubic-bezier(.34,1.56,.64,1);max-width:300px;min-width:240px;}
+.notif.show{transform:translateX(0);}
+.notif-bar{width:3px;background:var(--green);border-radius:2px;align-self:stretch;flex-shrink:0;}
+.notif-title{font-size:12.5px;font-weight:700;color:var(--text);}
+.notif-text{font-size:11px;color:var(--text2);margin-top:1px;}
+.mail-item.sent-item { border-left-color: var(--purple); background: #fdfcff; }
+.mail-item.sent-item:hover { background: var(--pl); }
+@keyframes spin{to{transform:rotate(360deg)}}.spin{display:inline-block;animation:spin .8s linear infinite;}
+@media(max-width:768px){.mail-panel{width:100%;}.mail-detail{display:none;}.topbar-chips{display:none;}}
+</style>
+</head>
+<body>
+
+<!-- NOTIF -->
+<div class="notif" id="notif">
+  <div class="notif-bar" id="notifBar"></div>
+  <span id="notifIcon" style="font-size:18px;margin-top:1px">📬</span>
+  <div><div class="notif-title" id="notifTitle"></div><div class="notif-text" id="notifText"></div></div>
+</div>
+
+<!-- MODAL LOGIN -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal" style="width:400px;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="width:48px;height:48px;background:var(--accent);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 12px;box-shadow:0 4px 12px rgba(37,99,235,.35);">📬</div>
+      <div class="modal-title" style="font-size:24px;">MailHub</div>
+      <div class="modal-sub" style="margin-bottom:0;">Label Énergie — Connexion sécurisée</div>
+    </div>
+    <div class="form-group"><label class="form-label">Identifiant</label>
+      <input class="form-input" id="loginUser" placeholder="Votre identifiant" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div class="form-group"><label class="form-label">Mot de passe</label>
+      <input class="form-input" id="loginPass" type="password" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div id="loginError" style="display:none;background:var(--rl);border:1px solid var(--rm);color:var(--red);border-radius:8px;padding:8px 12px;font-size:12.5px;margin-bottom:10px;"></div>
+    <button class="btn btn-primary" onclick="doLogin()" style="width:100%;justify-content:center;padding:11px;">Se connecter</button>
+  </div>
+</div>
+
+<!-- MODAL CONNEXION BOÎTE -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">Connecter une boîte mail</div>
+    <div class="modal-sub">Identifiants IMAP de la boîte client</div>
+    <div class="form-group"><label class="form-label">Nom du client / Dossier</label>
+      <input class="form-input" id="iName" placeholder="ex: Martin Jean-Pierre"/></div>
+    <div class="form-group"><label class="form-label">Adresse email</label>
+      <input class="form-input" id="iEmail" type="email" placeholder="client@gmail.com"/></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Mot de passe / App password</label>
+        <input class="form-input" id="iPass" type="password" placeholder="••••••••••••"/></div>
+      <div class="form-group"><label class="form-label">Type</label>
+        <select class="form-input" id="iType" onchange="toggleImap(this)">
+          <option>Gmail</option><option>Outlook / Hotmail</option>
+          <option>Yahoo</option><option>Orange / SFR / Free</option><option>Autre (IMAP)</option>
+        </select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Adresse du logement <span style="color:var(--text3);font-weight:400;text-transform:none">(optionnel)</span></label>
+      <input class="form-input" id="iAddress" placeholder="ex: 12 rue de la Paix, 75001 Paris"/></div>
+    <div class="form-group"><label class="form-label">Référence dossier ANAH <span style="color:var(--text3);font-weight:400;text-transform:none">(optionnel)</span></label>
+      <input class="form-input" id="iRef" placeholder="ex: MPR-2024-4821"/></div>
+    <div id="advancedImap" style="display:none">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Serveur IMAP</label>
+          <input class="form-input" id="iHost" placeholder="imap.example.com"/></div>
+        <div class="form-group"><label class="form-label">Port SSL</label>
+          <input class="form-input" id="iPort" value="993"/></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="addAccount()">✓ Connecter la boîte</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOUVEAU MAIL MANDAT -->
+<div class="modal-overlay" id="mandatModal">
+  <div class="modal" style="width:560px;max-width:96vw;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">
+      <div style="width:34px;height:34px;background:var(--purple);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;box-shadow:0 2px 8px rgba(124,58,237,.35);">📋</div>
+      <div class="modal-title" style="margin-bottom:0;">Nouveau mail — Contrôle mandat</div>
+    </div>
+    <div class="modal-sub">Envoyé depuis la boîte du client vers l'ANAH</div>
+
+    <div class="form-group"><label class="form-label">Boîte expéditrice (client)</label>
+      <select class="form-input" id="cmAccount" onchange="refreshCmPreview()"></select></div>
+
+    <div class="form-group"><label class="form-label">Destinataire ANAH</label>
+      <input class="form-input" id="cmTo" placeholder="ex: mandats.normandie@anah.fr" value="maprimerenov.reponse03@anah.fr" oninput="refreshCmPreview()"/></div>
+
+    <div class="form-group">
+      <label class="form-label">Mandataire</label>
+      <div style="display:flex;gap:8px;">
+        <button id="cmBtnValoren" onclick="setCmMandataire('VALOREN')"
+          style="flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--purple);background:var(--purple);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s;">✓ VALOREN</button>
+        <button id="cmBtnHellio" onclick="setCmMandataire('HELLIO SOLUTIONS')"
+          style="flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--pm);background:var(--white);color:var(--purple);font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s;">HELLIO SOLUTIONS</button>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Référence dossier</label>
+        <input class="form-input" id="cmRef" placeholder="ex: MPR-2024-4821" oninput="refreshCmPreview()"/></div>
+      <div class="form-group"><label class="form-label">Code ANAH <span style="color:var(--red);font-weight:800">*</span></label>
+        <input class="form-input" id="cmCode" placeholder="ex: A3B7X2" style="border-color:var(--pm);" oninput="refreshCmPreview()"/></div>
+    </div>
+
+    <div class="form-group"><label class="form-label">Adresse du logement</label>
+      <input class="form-input" id="cmAddress" placeholder="ex: 12 rue de la Paix, 75001 Paris" oninput="refreshCmPreview()"/></div>
+
+    <div class="form-group"><label class="form-label">Objet <span style="color:var(--text3);font-weight:400;text-transform:none">(auto-généré)</span></label>
+      <input class="form-input" id="cmSubject" readonly style="background:var(--bg);color:var(--text2);"/></div>
+
+    <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:6px;">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">APERÇU DU MAIL</div>
+      <pre id="cmPreview" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;color:var(--text2);line-height:1.7;white-space:pre-wrap;"></pre>
+    </div>
+
+    <div id="cmAlert" style="display:none;"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeMandatModal()">Annuler</button>
+      <button class="btn btn-purple" onclick="sendMandatMail()">📤 Envoyer ce mail</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">📬</div>
+      <span class="sb-logo-text">MailHub</span>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-item active" onclick="setView('inbox',this)" title="Boîte unifiée">
+        <span>📥</span><span class="nav-label">Boîte unifiée</span>
+        <span class="nav-badge" id="ubadge">0</span>
+      </div>
+      <div class="nav-sep"></div>
+      <div class="nav-item" onclick="setView('consent',this)" title="Consentement"><span>✅</span><span class="nav-label">Consentement</span></div>
+      <div class="nav-item" onclick="setView('mandat',this)" title="Contrôle mandat"><span>📋</span><span class="nav-label">Contrôle mandat</span></div>
+      <div class="nav-item" onclick="setView('surplace',this)" title="Contrôle sur place"><span>🔍</span><span class="nav-label">Contrôle sur place</span></div>
+      <div class="nav-item" onclick="setView('urgent',this)" title="Urgent"><span>🚨</span><span class="nav-label">Urgent</span></div>
+      <div class="nav-item" onclick="setView('autre',this)" title="Autre"><span>📂</span><span class="nav-label">Autre</span></div>
+      <div class="nav-sep"></div>
+      <div class="nav-item" onclick="openMandatModal()" title="Envoyer mail mandat" style="color:var(--purple);">
+        <span>✉️</span><span class="nav-label" style="color:var(--purple);font-weight:700;">Envoyer mandat</span>
+      </div>
+    </div>
+    <div class="sb-bottom">
+      <div class="nav-item" onclick="openModal()" title="Ajouter boîte"><span>➕</span><span class="nav-label">Ajouter une boîte</span></div>
+      <div class="nav-item" onclick="setView('accounts',this)" title="Comptes"><span>⚙️</span><span class="nav-label">Comptes</span></div>
+      <div class="nav-item" onclick="toggleSb()" title="Agrandir/Réduire"><span id="sbIcon">→</span><span class="nav-label" id="sbLabel">Agrandir</span></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Boîte unifiée</div>
+      <div class="topbar-chips">
+        <div class="chip"><div class="chip-dot" style="background:var(--green)"></div><span id="ccount">3</span> boîtes</div>
+        <div class="chip"><div class="chip-dot pulse" style="background:var(--orange)"></div><span id="ucount">0</span> non lus</div>
+        <div class="chip">🤖 IA active</div>
+      </div>
+      <button class="btn btn-primary" onclick="syncAll()" id="syncBtn">⟳ Synchroniser</button>
+    </div>
+
+    <div class="content" id="mainContent">
+      <!-- LISTE -->
+      <div class="mail-panel">
+        <div class="panel-top">
+          <div class="filter-scroll">
+            <div class="fchip fchip-all on" onclick="setFilter('all',this)">Tous</div>
+            <div class="fchip fchip-consent" onclick="setFilter('consent',this)">✅ Consentement</div>
+            <div class="fchip fchip-mandat" onclick="setFilter('mandat',this)">📋 C. Mandat</div>
+            <div class="fchip fchip-surplace" onclick="setFilter('surplace',this)">🔍 C. Sur place</div>
+            <div class="fchip fchip-urgent" onclick="setFilter('urgent',this)">🚨 Urgent</div>
+            <div class="fchip fchip-autre" onclick="setFilter('autre',this)">📂 Autre</div>
+          </div>
+          <div class="search-wrap">
+            <span style="color:var(--text3);font-size:13px">🔍</span>
+            <input id="srch" placeholder="Client, sujet, mot-clé…" oninput="searchMails(this.value)"/>
+          </div>
+        </div>
+        <div class="mail-list" id="mailList"></div>
+      </div>
+
+      <!-- DÉTAIL -->
+      <div class="mail-detail" id="mailDetail">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon-wrap">📬</div>
+          <div class="empty-label">Sélectionnez un mail pour le lire</div>
+        </div>
+        <div id="detailContent" style="display:none;flex-direction:column;height:100%;overflow:hidden;">
+          <div class="detail-header">
+            <div class="d-subject" id="dSubject"></div>
+            <div class="d-meta">
+              <div class="d-meta-item">👤 De : <strong id="dFrom"></strong></div>
+              <div class="d-meta-item">📬 <strong id="dBox"></strong></div>
+              <div class="d-meta-item">🕐 <span id="dDate"></span></div>
+              <div class="d-actions">
+                <button class="btn btn-ghost" onclick="markRead()" style="font-size:12px;padding:6px 12px">✓ Marquer lu</button>
+                <button class="btn btn-success" onclick="generateReply()" style="font-size:12px;padding:6px 12px">↩ Réponse auto</button>
+              </div>
+            </div>
+            <div class="d-tags" id="dTags"></div>
+          </div>
+          <div class="ai-card">
+            <div class="ai-card-header">
+              <div class="ai-badge">IA</div>
+              <span class="ai-mode">Détection hybride — mots-clés + analyse Claude</span>
+            </div>
+            <div class="ai-card-body">
+              <div class="ai-summary-text" id="aiText">Analyse en cours…</div>
+              <div id="aiCat"></div>
+              <div class="ai-key-points" id="aiPts"></div>
+            </div>
+          </div>
+          <div class="d-body" id="dBody"></div>
+          <div class="reply-panel">
+            <div class="reply-top">
+              <div class="reply-lbl">Réponse</div>
+              <div class="reply-ai-badge" id="replyBadge">✦ IA</div>
+            </div>
+            <textarea class="reply-ta" id="replyTa" rows="4" placeholder="Cliquez sur ↩ Réponse auto pour générer…"></textarea>
+            <div class="reply-footer">
+              <div class="reply-hint" id="replyHint">Réponse générée comme si c'était le client</div>
+              <div style="display:flex;gap:7px;">
+                <button class="btn btn-ghost" onclick="generateReply()" id="regenBtn" style="font-size:12px;padding:6px 12px">⟳ Regénérer</button>
+                <button class="btn btn-primary" onclick="sendReply()" style="font-size:12px;padding:6px 12px">📤 Envoyer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /content -->
+
+    <!-- ACCOUNTS VIEW -->
+    <div class="accounts-view" id="accountsView" style="display:none;">
+      <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:4px;">Boîtes connectées</div>
+      <div style="color:var(--text2);font-size:13px;margin-bottom:20px;">Gérez toutes les boîtes mail clients</div>
+      <div id="accList"></div>
+      <button class="btn btn-primary" onclick="openModal()" style="margin-top:8px;">➕ Connecter une boîte</button>
+    </div>
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIGURATION BACKEND
+// ══════════════════════════════════════════════
+const BACKEND_URL = 'https://mailhub-backend-production.up.railway.app';
+
+// ══════════════════════════════════════════════
+// CATEGORIES
+// ══════════════════════════════════════════════
+const CATS = {
+  consent:  {label:'Consentement',       icon:'✅',color:'var(--green)',  bg:'var(--gl)',bd:'var(--gm)',tc:'t-consent'},
+  mandat:   {label:'Contrôle mandat',    icon:'📋',color:'var(--purple)',bg:'var(--pl)',bd:'var(--pm)',tc:'t-mandat'},
+  surplace: {label:'Contrôle sur place', icon:'🔍',color:'var(--orange)',bg:'var(--ol)',bd:'var(--om)',tc:'t-surplace'},
+  urgent:   {label:'Urgent',             icon:'🚨',color:'var(--red)',   bg:'var(--rl)',bd:'var(--rm)',tc:'t-urgent'},
+  autre:    {label:'Autre',              icon:'📂',color:'var(--cyan)',  bg:'var(--cl)',bd:'#a5f3fc', tc:'t-autre'},
+};
+const KW = {
+  consent:  ['consentement','rgpd','confirmer votre accord','autorisation','accord client'],
+  mandat:   ['contrôle mandat','mandat','maîtrise d\'ouvrage','mod','vérification mandat'],
+  surplace: ['contrôle sur place','visite sur place','inspection','agent anah','programmé','au domicile'],
+  urgent:   ['urgent','relance','délai dépassé','suspension','mise en demeure','immédiat','dernier délai','48h','clôturé'],
+};
+function kwDetect(txt){
+  const l=txt.toLowerCase();
+  for(const[cat,kws]of Object.entries(KW)) if(kws.some(k=>l.includes(k))) return cat;
+  return null;
+}
+
+// ══════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════
+let accounts=[
+  {id:1,name:'Martin Jean-Pierre',email:'dossier.martin2024@gmail.com',type:'Gmail',count:3,color:'#059669',address:'',ref:''},
+  {id:2,name:'Dubois Marie',email:'marie.dubois.anah@gmail.com',type:'Gmail',count:4,color:'#2563eb',address:'',ref:''},
+  {id:3,name:'Famille Bernard',email:'travaux.bernard@outlook.com',type:'Outlook',count:2,color:'#7c3aed',address:'',ref:''},
+];
+let mails=[
+  {id:1,aid:1,from:'contact@anah.fr',sender:'ANAH',subject:'Demande de consentement — Dossier #2024-4821',
+   body:`Madame, Monsieur,\n\nSuite au dépôt de votre dossier MaPrimeRénov', nous vous contactons afin de recueillir votre consentement RGPD.\n\nVotre dossier n°2024-4821 est en cours d'instruction. Merci de confirmer votre accord dans un délai de 7 jours ouvrés.\n\nCordialement,\nL'équipe ANAH`,
+   date:'Auj. 09:42',tags:['consent','anah'],urgent:false,unread:true,cat:null,sum:null,pts:null},
+  {id:2,aid:2,from:'controle@anah.gouv.fr',sender:'ANAH Contrôle',subject:'URGENT — Contrôle sur place programmé le 15/05',
+   body:`Madame, Monsieur,\n\nUn contrôle sur place est programmé à votre domicile le 15 mai 2025 entre 9h et 12h.\n\nDocuments à préparer :\n— Factures des entreprises intervenantes\n— Photos avant/après travaux\n— Attestation de conformité\n\nCordialement,\nService Contrôle ANAH`,
+   date:'Auj. 08:15',tags:['surplace','urgent','anah'],urgent:true,unread:true,cat:null,sum:null,pts:null},
+  {id:3,aid:3,from:'mandats@anah.fr',sender:'ANAH Mandats',subject:"Contrôle mandat de maîtrise d'ouvrage — Famille Bernard",
+   body:`Madame, Monsieur,\n\nNous procédons au contrôle de votre mandat de maîtrise d'ouvrage déléguée pour le dossier MaPrimeRénov'.\n\nLe contrôle mandat sera finalisé sous 5 jours ouvrés.\n\nCordialement,\nService Mandats ANAH`,
+   date:'Hier 16:30',tags:['mandat','anah'],urgent:false,unread:true,cat:null,sum:null,pts:null},
+  {id:4,aid:1,from:'noreply@anah.fr',sender:'ANAH',subject:'Relance urgente — Document manquant #2024-4821',
+   body:'Votre dossier est incomplet. Une pièce justificative est manquante. Merci de la transmettre sous 48h.',
+   date:'Hier 11:20',tags:['urgent','autre'],urgent:true,unread:false,cat:null,sum:null,pts:null},
+  {id:5,aid:2,from:'info@anah.fr',sender:'ANAH Info',subject:"Mise à jour — Nouveaux plafonds MaPrimeRénov' 2025",
+   body:"Bonne nouvelle : les plafonds de revenus pour MaPrimeRénov' ont été revalorisés.",
+   date:'02/05 09:00',tags:['autre'],urgent:false,unread:false,cat:null,sum:null,pts:null},
+];
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let selMail=null,curFilter='all',curSearch='',curView='inbox',sbExp=false,generating=false;
+const ga=id=>accounts.find(a=>a.id==id);
+const gn=id=>ga(id)?.name||'';
+const ge=id=>ga(id)?.email||'';
+
+function tagH(t){
+  const c=CATS[t];
+  if(c) return `<span class="tag ${c.tc}">${c.icon} ${c.label}</span>`;
+  if(t==='anah') return `<span class="tag t-anah">ANAH</span>`;
+  return '';
+}
+
+// ══════════════════════════════════════════════
+// RENDER LIST
+// ══════════════════════════════════════════════
+function filteredMails(){
+  let l=[...mails];
+  if(curFilter!=='all') l=l.filter(m=>m.tags.includes(curFilter));
+  if(curSearch){const q=curSearch.toLowerCase();l=l.filter(m=>m.sender.toLowerCase().includes(q)||m.subject.toLowerCase().includes(q)||gn(m.aid).toLowerCase().includes(q)||m.body.toLowerCase().includes(q));}
+  return l.sort((a,b)=>(b.unread-a.unread)||(b.id-a.id));
+}
+
+function renderList(){
+  const list=filteredMails();
+  const u=mails.filter(m=>m.unread).length;
+  document.getElementById('ubadge').textContent=u;
+  document.getElementById('ucount').textContent=u;
+  const el=document.getElementById('mailList');
+  if(!list.length){el.innerHTML=`<div class="empty-state" style="padding:40px 16px"><div class="empty-icon-wrap" style="font-size:24px;width:56px;height:56px">📭</div><div class="empty-label" style="margin-top:10px">Aucun mail</div></div>`;return;}
+  el.innerHTML=list.map(m=>{
+    const acc=ga(m.aid),init=gn(m.aid).split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),col=acc?.color||'#2563eb';
+    return `<div class="mail-item ${m.unread?'unread':''} ${selMail?.id===m.id?'sel':''} ${m.sent?'sent-item':''}" onclick="selectMail(${m.id})">
+      ${m.unread&&selMail?.id!==m.id?'<div class="unread-dot"></div>':''}
+      <div class="mi-row"><div class="mi-avatar" style="background:${m.sent?'#f5f3ff':''}${!m.sent?col+'18':''};color:${m.sent?'var(--purple)':col}">${m.sent?'📤':init}</div>
+      <div class="mi-sender" style="${m.sent?'color:var(--purple);font-weight:600;':''}">${m.sender}</div><div class="mi-time">${m.date}</div></div>
+      <div class="mi-subject">${m.subject}</div>
+      <div class="mi-preview">${m.sent?`→ ${m.sum?.split('.')[0]||''}`:gn(m.aid)+' · '+ge(m.aid)}</div>
+      <div class="mi-tags">${m.tags.map(tagH).join('')}${m.sent?'<span class="tag" style="background:#f5f3ff;color:var(--purple);border:1px solid var(--pm);">📤 Envoyé</span>':''}${m.cat&&!m.tags.includes(m.cat)&&!m.sent?`<span class="tag t-ai">✦IA: ${CATS[m.cat]?.label||''}</span>`:''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// SELECT MAIL
+// ══════════════════════════════════════════════
+async function selectMail(id){
+  selMail=mails.find(m=>m.id===id);
+  if(!selMail) return;
+  renderList();
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('detailContent').style.display='flex';
+  document.getElementById('dSubject').textContent=selMail.subject;
+  document.getElementById('dFrom').textContent = selMail.sent ? selMail.from : selMail.from;
+  document.getElementById('dBox').textContent=ge(selMail.aid);
+  document.getElementById('dDate').textContent=selMail.date;
+  document.getElementById('dTags').innerHTML=selMail.tags.map(tagH).join('')+(selMail.sent?'<span class="tag" style="background:#f5f3ff;color:var(--purple);border:1px solid var(--pm);">📤 Mail envoyé</span>':'');
+  document.getElementById('dBody').textContent=selMail.body;
+  document.getElementById('replyTa').value='';
+  document.getElementById('replyHint').textContent='Cliquez sur ↩ Réponse auto pour générer';
+  document.getElementById('replyBadge').textContent='✦ IA';
+
+  // Si mail sortant : masquer le panneau réponse, afficher bandeau
+  const replyPanel=document.querySelector('.reply-panel');
+  if(selMail.sent){
+    replyPanel.style.display='none';
+    document.getElementById('dFrom').textContent='Vous → '+selMail.from.replace('📤 Envoyé — ','');
+  } else {
+    replyPanel.style.display='block';
+    document.getElementById('dFrom').textContent=selMail.from;
+  }
+  document.getElementById('aiText').textContent='Analyse en cours…';
+  document.getElementById('aiPts').innerHTML='';
+  document.getElementById('aiCat').innerHTML='';
+  if(selMail.sum) renderAnalysis(selMail);
+  else await analyzeWithAI(selMail);
+}
+
+// ══════════════════════════════════════════════
+// AI ANALYSIS
+// ══════════════════════════════════════════════
+async function analyzeWithAI(mail){
+  const kw=kwDetect(mail.subject+' '+mail.body);
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',max_tokens:600,
+      messages:[{role:'user',content:`Analyse ce mail pour "${gn(mail.aid)}" (dossier MaPrimeRénov'/ANAH). Réponds UNIQUEMENT en JSON valide sans backticks :
+{"categorie":"consent|mandat|surplace|urgent|autre","resume":"1 phrase","points":["p1","p2","p3"],"urgence":true|false,"action":"action concrète"}
+consent=RGPD/accord | mandat=contrôle MOD | surplace=visite domicile | urgent=délai/suspension | autre=reste
+SUJET: ${mail.subject}
+CORPS: ${mail.body}`}]})});
+    const d=await r.json();
+    const raw=d.content?.find(c=>c.type==='text')?.text||'{}';
+    let p;try{p=JSON.parse(raw.replace(/```json|```/g,'').trim());}catch{p={};}
+    const fc=p.categorie||kw||'autre';
+    mail.cat=fc; mail.sum=p.resume||'Analyse indisponible.';
+    mail.pts=[...(p.points||[]),p.action?`→ ${p.action}`:null].filter(Boolean);
+    if(!mail.tags.includes(fc)) mail.tags=[fc,...mail.tags.filter(t=>t==='anah')];
+    if(p.urgence&&!mail.tags.includes('urgent')){mail.tags.push('urgent');mail.urgent=true;}
+  }catch{
+    mail.cat=kw||'autre'; mail.sum='Classification par mots-clés.';
+    mail.pts=kw?[`📌 ${CATS[kw]?.label}`]:[];
+    if(!mail.tags.includes(mail.cat)) mail.tags=[mail.cat,...mail.tags.filter(t=>t==='anah')];
+  }
+  renderAnalysis(mail); renderList();
+}
+function renderAnalysis(m){
+  document.getElementById('aiText').textContent=m.sum||'';
+  const c=CATS[m.cat];
+  if(c) document.getElementById('aiCat').innerHTML=`<div class="ai-cat-pill" style="background:${c.bg};border:1.5px solid ${c.bd};color:${c.color}">${c.icon} ${c.label} — détecté</div>`;
+  document.getElementById('aiPts').innerHTML=(m.pts||[]).map(p=>`<div class="ai-kp">${p}</div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// REPLY — Autres catégories (pas mandat)
+// ══════════════════════════════════════════════
+async function generateReply(){
+  if(!selMail||generating) return;
+  generating=true;
+  const ta=document.getElementById('replyTa'),btn=document.getElementById('regenBtn');
+  ta.value=''; ta.placeholder='⟳ Génération en cours…'; btn.disabled=true;
+  const cat=selMail.cat||'autre',clientName=gn(selMail.aid);
+  // Si mandat → ouvre la modale dédiée
+  if(cat==='mandat'){
+    ta.placeholder='';
+    document.getElementById('replyBadge').textContent='📋';
+    document.getElementById('replyHint').textContent='→ Utilisez ✉️ Envoyer mandat dans la sidebar';
+    btn.disabled=false; generating=false;
+    openMandatModal(); return;
+  }
+  const females=['Marie','Sophie','Julie','Isabelle','Nathalie','Christine','Catherine','Anne','Claire','Sarah','Emma','Laura','Alice','Camille','Léa','Sylvie','Valérie','Sandrine','Céline','Monique','Françoise','Martine','Brigitte','Corinne','Véronique','Stéphanie','Karine','Virginie','Aurélie','Christelle'];
+  const civ=females.includes(clientName.split(' ')[0])?'Madame':'Monsieur';
+  const instr={consent:"Confirme simplement son accord RGPD. Bref et naturel.",surplace:"Confirme sa disponibilité à la date du contrôle et que les documents seront prêts.",urgent:"Répond rapidement, prend note, confirme qu'il va s'en occuper.",autre:"Accuse réception poliment."};
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',max_tokens:300,
+      messages:[{role:'user',content:`Rédige un email EXACTEMENT comme si tu étais ${clientName}, un(e) particulier(e) français(e) qui répond à l'ANAH.
+SUJET REÇU : ${selMail.subject}
+CONTENU : ${selMail.body}
+INSTRUCTION : ${instr[cat]||instr.autre}
+RÈGLES : Tu es ${clientName} (particulier, PAS une entreprise). Français naturel. Commence par "${civ},". Max 4 phrases. Signe uniquement "${clientName}". JAMAIS "Label Énergie". Rédige uniquement la réponse.`}]})});
+    const d=await r.json();
+    const txt=d.content?.find(c=>c.type==='text')?.text||'';
+    ta.placeholder=''; ta.value=txt;
+    document.getElementById('replyBadge').textContent='✦ Style client — IA';
+    document.getElementById('replyHint').textContent='Réponse écrite comme si c\'était le client — vérifiez avant envoi';
+  }catch{
+    ta.placeholder='';
+    ta.value=`${civ},\n\nJe vous confirme avoir bien reçu votre message et en prends bonne note.\n\nCordialement,\n${clientName}`;
+    document.getElementById('replyBadge').textContent='✦ Modèle';
+  }
+  btn.disabled=false; generating=false;
+}
+function markRead(){
+  if(!selMail) return;
+  const m=mails.find(m=>m.id===selMail.id); if(m) m.unread=false;
+  renderList(); showNotif('✅','#059669','Marqué comme lu',gn(selMail.aid));
+}
+function sendReply(){
+  const t=document.getElementById('replyTa').value.trim();
+  if(!t||!selMail) return;
+  markRead();
+  document.getElementById('replyTa').value='';
+  document.getElementById('replyHint').textContent='✅ Réponse envoyée';
+  showNotif('📤','#2563eb','Réponse envoyée',gn(selMail.aid));
+}
+
+// ══════════════════════════════════════════════
+// COMPOSE MANDAT MODAL
+// ══════════════════════════════════════════════
+let cmMandataire='VALOREN';
+function setCmMandataire(name){
+  cmMandataire=name;
+  const bV=document.getElementById('cmBtnValoren'),bH=document.getElementById('cmBtnHellio');
+  if(name==='VALOREN'){
+    bV.style.cssText='flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--purple);background:var(--purple);color:#fff;font-family:Plus Jakarta Sans,sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s;'; bV.textContent='✓ VALOREN';
+    bH.style.cssText='flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--pm);background:var(--white);color:var(--purple);font-family:Plus Jakarta Sans,sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s;'; bH.textContent='HELLIO SOLUTIONS';
+  }else{
+    bH.style.cssText='flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--purple);background:var(--purple);color:#fff;font-family:Plus Jakarta Sans,sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s;'; bH.textContent='✓ HELLIO SOLUTIONS';
+    bV.style.cssText='flex:1;padding:8px;border-radius:var(--rs);border:2px solid var(--pm);background:var(--white);color:var(--purple);font-family:Plus Jakarta Sans,sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s;'; bV.textContent='VALOREN';
+  }
+  refreshCmPreview();
+}
+
+function openMandatModal(){
+  const sel=document.getElementById('cmAccount');
+  sel.innerHTML=accounts.map(a=>`<option value="${a.id}">${a.name} — ${a.email}</option>`).join('');
+  // Pré-remplir depuis le mail sélectionné si disponible
+  if(selMail){
+    sel.value=selMail.aid;
+    const acc=ga(selMail.aid);
+    document.getElementById('cmRef').value=acc?.ref||'';
+    document.getElementById('cmAddress').value=acc?.address||'';
+  }
+  document.getElementById('cmCode').value='';
+  document.getElementById('cmTo').value='';
+  document.getElementById('cmAlert').style.display='none';
+  cmMandataire='VALOREN'; setCmMandataire('VALOREN');
+  refreshCmPreview();
+  document.getElementById('mandatModal').classList.add('vis');
+}
+function closeMandatModal(){document.getElementById('mandatModal').classList.remove('vis');}
+document.getElementById('mandatModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeMandatModal();});
+document.getElementById('cmAccount').addEventListener('change',()=>{
+  const acc=ga(document.getElementById('cmAccount').value);
+  document.getElementById('cmRef').value=acc?.ref||'';
+  document.getElementById('cmAddress').value=acc?.address||'';
+  refreshCmPreview();
+});
+
+function refreshCmPreview(){
+  const acc=ga(document.getElementById('cmAccount').value);
+  const name=acc?.name||'[Nom Prénom]';
+  const ref=document.getElementById('cmRef').value.trim()||'[Référence dossier]';
+  const addr=document.getElementById('cmAddress').value.trim()||'[Adresse complète du logement]';
+  const code=document.getElementById('cmCode').value.trim()||'[Code reçu dans le courrier]';
+  document.getElementById('cmSubject').value=`Réponse contrôle mandat – Dossier MaPrimeRénov' ${ref}`;
+  document.getElementById('cmPreview').textContent=`Bonjour,\n\nJe soussigné(e) ${name}, confirme être à l'origine de la demande MaPrimeRénov' concernant le dossier ${ref}.\n\nJe confirme avoir mandaté ${cmMandataire} pour m'accompagner dans mes démarches MaPrimeRénov'.\n\nJe confirme que les travaux concernent le logement situé à l'adresse suivante : ${addr}.\n\nCode indiqué dans le courrier : ${code}.\n\nCordialement,\n${name}`;
+}
+
+async function sendMandatMail(){
+  const to=document.getElementById('cmTo').value.trim();
+  const ref=document.getElementById('cmRef').value.trim();
+  const addr=document.getElementById('cmAddress').value.trim();
+  const code=document.getElementById('cmCode').value.trim();
+  const al=document.getElementById('cmAlert');
+  const missing=[];
+  if(!to) missing.push('destinataire ANAH');
+  if(!ref) missing.push('référence dossier');
+  if(!addr) missing.push('adresse du logement');
+  if(!code) missing.push('code ANAH');
+  if(missing.length){
+    al.className='alert alert-w'; al.style.display='flex';
+    al.innerHTML=`<span style="font-size:15px;flex-shrink:0">⚠️</span><div>Champs manquants : <strong>${missing.join(', ')}</strong></div>`;
+    return;
+  }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)){
+    al.className='alert alert-e'; al.style.display='flex';
+    al.innerHTML=`<span style="font-size:15px;flex-shrink:0">🔴</span><div>Adresse email invalide.</div>`;
+    return;
+  }
+  const btn=document.querySelector('#mandatModal .btn-purple');
+  btn.textContent='⟳ Envoi…'; btn.disabled=true;
+  await new Promise(r=>setTimeout(r,1200)); // Simulation — remplacer par appel backend
+
+  const acc=ga(document.getElementById('cmAccount').value);
+  const now=new Date();
+  const dateStr=`${now.toLocaleDateString('fr-FR')} ${now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`;
+  const subject=document.getElementById('cmSubject').value;
+  const body=document.getElementById('cmPreview').textContent;
+
+  // ── Enregistrement de la trace dans la liste des mails
+  mails.unshift({
+    id: Date.now(),
+    aid: parseInt(document.getElementById('cmAccount').value) || document.getElementById('cmAccount').value,
+    from: acc?.email || '',
+    sender: `📤 Envoyé — ${acc?.name||''}`,
+    subject,
+    body,
+    date: dateStr,
+    tags: ['mandat'],
+    urgent: false,
+    unread: false,
+    cat: 'mandat',
+    sum: `Mail de réponse contrôle mandat envoyé à ${to}. Mandataire : ${cmMandataire}. Référence : ${ref}.`,
+    pts: [`📤 Envoyé à : ${to}`, `📋 Mandataire : ${cmMandataire}`, `🔑 Code : ${code}`, `🏠 ${addr}`],
+    sent: true, // marqueur mail sortant
+  });
+
+  renderList();
+  closeMandatModal();
+  showNotif('📤','#7c3aed','Mail mandat envoyé ✓',`${acc?.name||''} → ${to}`);
+  btn.textContent='📤 Envoyer ce mail'; btn.disabled=false;
+}
+
+// ══════════════════════════════════════════════
+// FILTERS / SEARCH / VIEW
+// ══════════════════════════════════════════════
+function setFilter(f,el){curFilter=f;document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('on'));el.classList.add('on');renderList();}
+function searchMails(q){curSearch=q;renderList();}
+function setView(v,el){
+  curView=v;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const titles={inbox:'Boîte unifiée',consent:'Consentement',mandat:'Contrôle mandat',surplace:'Contrôle sur place',urgent:'Urgent',autre:'Autre',accounts:'Boîtes connectées'};
+  document.getElementById('topbarTitle').textContent=titles[v]||'Boîte unifiée';
+  if(v==='accounts'){
+    document.getElementById('mainContent').style.display='none';
+    document.getElementById('accountsView').style.display='block';
+    renderAccounts();
+  }else{
+    document.getElementById('mainContent').style.display='flex';
+    document.getElementById('accountsView').style.display='none';
+    const fm={inbox:'all',consent:'consent',mandat:'mandat',surplace:'surplace',urgent:'urgent',autre:'autre'};
+    const chip=document.querySelector(`.fchip-${fm[v]||'all'}`);
+    if(chip) setFilter(fm[v]||'all',chip);
+  }
+}
+
+// ══════════════════════════════════════════════
+// SYNC — Appels réels au backend
+// ══════════════════════════════════════════════
+async function syncAll(){
+  const btn=document.getElementById('syncBtn');
+  btn.innerHTML='<span class="spin">⟳</span> Sync…'; btn.disabled=true;
+  try {
+    const r=await api('/api/sync','POST');
+    // Recharger tous les mails depuis le backend
+    await loadAllMails();
+    const newMails=mails.filter(m=>m.unread).length;
+    if(newMails>0) showNotif('📩','#2563eb',`${newMails} mail(s) non lu(s)`,'Synchronisation terminée');
+    else showNotif('✅','#059669','Synchronisé','Aucun nouveau mail');
+  } catch(e) {
+    showNotif('⚠️','#d97706','Erreur sync',e.message);
+  }
+  btn.innerHTML='⟳ Synchroniser'; btn.disabled=false;
+}
+
+async function loadAllMails(){
+  try {
+    const data=await api('/api/mails');
+    // Garde les mails envoyés localement (traces mandat)
+    const sentMails=mails.filter(m=>m.sent);
+    mails=[...data,...sentMails];
+    renderList();
+  } catch(e) { console.error('Erreur chargement mails:',e); }
+}
+
+async function loadAccounts(){
+  try {
+    const data=await api('/api/accounts');
+    // Garde les comptes locaux avec leurs couleurs
+    accounts=data.map((a,i)=>{
+      const cols=['#059669','#2563eb','#7c3aed','#d97706','#0891b2','#dc2626','#db2777'];
+      return {...a, color:cols[i%cols.length], address:a.address||'', ref:a.ref||''};
+    });
+    document.getElementById('ccount').textContent=accounts.length;
+    renderList();
+  } catch(e) { console.error('Erreur chargement comptes:',e); }
+}
+
+// ══════════════════════════════════════════════
+// ACCOUNTS
+// ══════════════════════════════════════════════
+function renderAccounts(){
+  const icons={Gmail:'📧','Outlook / Hotmail':'📨',Yahoo:'📬','Orange / SFR / Free':'🟠','Autre (IMAP)':'📡'};
+  document.getElementById('accList').innerHTML=accounts.map(a=>`
+    <div class="acc-item">
+      <span style="font-size:20px">${icons[a.type]||'📬'}</span>
+      <div class="acc-info"><div class="acc-email">${a.email}</div><div class="acc-status">${a.name} · ${a.type} · ✅ Connectée · ${a.unread||0} non lus</div></div>
+      <div class="acc-count">${a.count||0} mails</div>
+      <button class="btn btn-ghost" onclick="removeAcc('${a.id}')" style="font-size:11px;padding:4px 9px;margin-left:8px;">✕</button>
+    </div>`).join('');
+  document.getElementById('ccount').textContent=accounts.length;
+}
+
+async function removeAcc(id){
+  if(!confirm('Déconnecter cette boîte ?')) return;
+  try {
+    await api(`/api/accounts/${id}`,'DELETE');
+    accounts=accounts.filter(a=>a.id!==id);
+    mails=mails.filter(m=>m.accountId!==id&&m.aid!==id);
+    renderAccounts(); renderList();
+    showNotif('✅','#059669','Boîte déconnectée','');
+  } catch(e) { showNotif('⚠️','#d97706','Erreur',e.message); }
+}
+
+// ══════════════════════════════════════════════
+// MODAL CONNEXION
+// ══════════════════════════════════════════════
+function openModal(){document.getElementById('modalOverlay').classList.add('vis');}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('vis');}
+function toggleImap(s){document.getElementById('advancedImap').style.display=s.value==='Autre (IMAP)'?'block':'none';}
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+
+async function addAccount(){
+  const name=document.getElementById('iName').value.trim();
+  const email=document.getElementById('iEmail').value.trim();
+  const password=document.getElementById('iPass').value.trim();
+  const type=document.getElementById('iType').value;
+  const address=document.getElementById('iAddress').value.trim();
+  const ref=document.getElementById('iRef').value.trim();
+  if(!name||!email||!password){alert('Renseignez le nom, l\'email et le mot de passe.');return;}
+
+  const btn=document.querySelector('#modalOverlay .btn-primary');
+  btn.textContent='⟳ Connexion…'; btn.disabled=true;
+
+  try {
+    const result=await api('/api/accounts','POST',{name,email,password,type,address,ref});
+    const cols=['#059669','#2563eb','#7c3aed','#d97706','#0891b2','#dc2626','#db2777'];
+    accounts.push({...result.account, color:cols[(accounts.length)%cols.length], address, ref});
+    // Charger les mails de ce nouveau compte
+    await loadAllMails();
+    closeModal();
+    ['iName','iEmail','iPass','iAddress','iRef'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('ccount').textContent=accounts.length;
+    showNotif('✅','#059669',`Boîte connectée — ${result.account.count} mails récupérés`,email);
+    if(curView==='accounts') renderAccounts();
+  } catch(e) {
+    showNotif('🔴','#dc2626','Connexion échouée',e.message);
+  }
+  btn.textContent='✓ Connecter la boîte'; btn.disabled=false;
+}
+
+// ══════════════════════════════════════════════
+// SIDEBAR
+// ══════════════════════════════════════════════
+function toggleSb(){
+  sbExp=!sbExp;
+  document.getElementById('sidebar').classList.toggle('exp',sbExp);
+  document.getElementById('sbIcon').textContent=sbExp?'←':'→';
+  document.getElementById('sbLabel').textContent=sbExp?'Réduire':'Agrandir';
+}
+
+// ══════════════════════════════════════════════
+// NOTIFICATIONS
+// ══════════════════════════════════════════════
+function showNotif(icon,barColor,title,text){
+  document.getElementById('notifBar').style.background=barColor;
+  document.getElementById('notifIcon').textContent=icon;
+  document.getElementById('notifTitle').textContent=title;
+  document.getElementById('notifText').textContent=text;
+  const n=document.getElementById('notif');
+  n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),4000);
+}
+
+// ══════════════════════════════════════════════
+// AUTH + API
+// ══════════════════════════════════════════════
+let authToken = localStorage.getItem('mailhub_token') || null;
+
+async function api(path, method='GET', body=null){
+  const opts={method, headers:{'Content-Type':'application/json'}};
+  if(authToken) opts.headers['Authorization']=`Bearer ${authToken}`;
+  if(body) opts.body=JSON.stringify(body);
+  const r=await fetch(BACKEND_URL+path, opts);
+  if(r.status===401){ showLoginModal(); throw new Error('Session expirée'); }
+  const data=await r.json();
+  if(!r.ok) throw new Error(data.error||'Erreur serveur');
+  return data;
+}
+
+function showLoginModal(){
+  authToken=null;
+  localStorage.removeItem('mailhub_token');
+  document.getElementById('loginModal').classList.add('vis');
+}
+
+async function doLogin(){
+  const login=document.getElementById('loginUser').value.trim();
+  const password=document.getElementById('loginPass').value.trim();
+  if(!login||!password) return;
+  const btn=document.querySelector('#loginModal .btn-primary');
+  btn.textContent='⟳ Connexion…'; btn.disabled=true;
+  try {
+    const data=await api('/auth/login','POST',{login,password});
+    authToken=data.token;
+    localStorage.setItem('mailhub_token',authToken);
+    document.getElementById('loginModal').classList.remove('vis');
+    document.getElementById('loginError').style.display='none';
+    await init();
+  } catch(e) {
+    document.getElementById('loginError').style.display='block';
+    document.getElementById('loginError').textContent='Identifiants incorrects.';
+  }
+  btn.textContent='Se connecter'; btn.disabled=false;
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+async function init(){
+  // Vider les faux mails de démo
+  mails=mails.filter(m=>m.sent); // Garde uniquement les traces envoyées
+  accounts=[];
+  await loadAccounts();
+  await loadAllMails();
+  renderList();
+  setInterval(syncAll, 120000);
+}
+
+// Démarrage — vérifie si déjà connecté
+if(authToken){
+  init();
+} else {
+  // Affiche la modale de connexion
+  setTimeout(()=>showLoginModal(), 100);
+  renderList(); // Affiche quand même l'interface vide
+}
+</script>
+</body>
+</html>
